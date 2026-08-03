@@ -1,0 +1,25 @@
+[project]
+name = "decoy-kit-free"
+version = "0.1.0"
+description = "A free honeytoken SSH key trap - catches secret scanners and attackers after a filesystem or repo compromise."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.urls]
+Homepage = "https://northstartproductionstudio.com/decoy-kit"
+Source = "https://github.com/Ech333/decoy-kit-free"
+
+[project.optional-dependencies]
+serve = ["fastapi>=0.100", "uvicorn>=0.23"]
+
+[project.scripts]
+decoy-kit-free = "decoy_kit_free.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["decoy_kit_free*"]
