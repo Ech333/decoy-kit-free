@@ -37,6 +37,16 @@ class BuildAppTests(unittest.TestCase):
         self.assertEqual(resp.status_code, 404)
         self.assertEqual(self.hits, [])
 
+    def test_a_hit_with_a_real_plant_id_attributes_it_in_the_alert(self):
+        resp = self.client.get("/api/export?plant=chk_deadbeefcafef00d")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(self.hits[0][1]["plant_id"], "chk_deadbeefcafef00d")
+
+    def test_a_hit_with_no_plant_query_param_still_fires_with_plant_id_none(self):
+        resp = self.client.get("/api/export")
+        self.assertEqual(resp.status_code, 200)
+        self.assertIsNone(self.hits[0][1]["plant_id"])
+
     def test_state_exposes_the_resolved_seed(self):
         self.assertEqual(self.app.state.seed, bytes.fromhex(SEED_HEX))
 

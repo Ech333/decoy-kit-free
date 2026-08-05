@@ -89,7 +89,10 @@ def build_asgi_middleware(seed: bytes, on_hit=None):
     """Returns a Starlette/FastAPI-compatible middleware class. Import fastapi/starlette only
     inside this function, so this module has zero hard dependency on either - `evaluate()`/
     `is_bait_path()` above work with no framework at all.
-    `on_hit(path, source_id, response)` is called (if given) whenever a bait path is hit."""
+    `on_hit(path, source_id, response, url)` is called (if given) whenever a bait path is hit.
+    `url` is the full request URL (including query string) as a string - callers that plant a
+    per-plant id in the query string (see `beacon.py`) need it to attribute the hit; this module
+    itself stays agnostic to what, if anything, is in the query string."""
     from starlette.middleware.base import BaseHTTPMiddleware
     from starlette.responses import JSONResponse
 
@@ -100,7 +103,7 @@ def build_asgi_middleware(seed: bytes, on_hit=None):
                 source_id = request.client.host if request.client else "unknown"
                 response = evaluate(path, source_id, seed)
                 if on_hit:
-                    on_hit(path, source_id, response)
+                    on_hit(path, source_id, response, str(request.url))
                 return JSONResponse(response.payload, status_code=200)
             return await call_next(request)
 

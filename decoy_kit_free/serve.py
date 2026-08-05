@@ -43,6 +43,7 @@ def build_app(seed_hex: str | None = None, siem_webhook=None):
     from fastapi import FastAPI
 
     from . import ghost_schema
+    from .beacon import extract_plant_id_from_query
 
     seed = _resolve_seed(seed_hex)
     app = FastAPI(title="Decoy Kit Free - SSH Key Trap", docs_url=None, redoc_url=None)
@@ -52,11 +53,13 @@ def build_app(seed_hex: str | None = None, siem_webhook=None):
         if siem_webhook:
             siem_webhook(trap_name, detail)
 
+    def _on_ghost_schema_hit(path, source_id, response, url):
+        # plant_id is None for a bait-path hit with no (or malformed) ?plant= query param - still
+        # a real signal, just not attributable to one specific planted key.
+        _alert("ghost-schema", path=path, source_id=source_id, plant_id=extract_plant_id_from_query(url))
+
     app.add_middleware(
-        ghost_schema.build_asgi_middleware(
-            seed,
-            on_hit=lambda path, source_id, response: _alert("ghost-schema", path=path, source_id=source_id),
-        )
+        ghost_schema.build_asgi_middleware(seed, on_hit=_on_ghost_schema_hit)
     )
     app.state.seed = seed
     return app
