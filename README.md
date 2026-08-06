@@ -2,7 +2,7 @@
 
 A real SSH key honeytoken trap, free forever. This is one full module out of
 [Decoy Kit](https://northstartproductionstudio.com/decoy-kit) — Northstar's paid honeytoken
-package (cloud metadata SSRF traps, Kubernetes, Postman, RAG corpora — 8 traps total) — given
+package (cloud metadata SSRF traps, Kubernetes, Postman, RAG corpora — 9 traps total) — given
 away in full, not a crippled demo.
 
 ## What it does
