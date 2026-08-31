@@ -74,6 +74,17 @@ class ServeCommandTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0)
         self.assertIn("--port", result.stdout)
 
+    def test_rejects_a_malformed_seed_hex_with_a_clean_error_not_a_traceback(self):
+        # Real crash found live 2026-08-31 (found first in decoy-kit, ported here), sysadmin-
+        # perspective stress test: build_app's first real step is resolving --seed-hex, and a
+        # malformed one crashed with a raw ValueError traceback instead of a clean error -
+        # confirmed live, before uvicorn ever binds a port, so this exits promptly rather than
+        # hanging. Regression guard.
+        result = _run_cli("serve", "--seed-hex", "not-valid-hex")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("error:", result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()

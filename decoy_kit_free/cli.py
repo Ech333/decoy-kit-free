@@ -45,7 +45,15 @@ def _cmd_serve(args: argparse.Namespace) -> int:
         return 1
     from .serve import build_app
 
-    app = build_app(seed_hex=args.seed_hex)
+    # Real crash found live 2026-08-31 (found first in decoy-kit, ported here), sysadmin-
+    # perspective stress test: build_app's first real step is resolving --seed-hex, and a
+    # malformed one crashed with a raw ValueError traceback instead of a clean error - confirmed
+    # live, identical bug to decoy-kit's own `serve` command.
+    try:
+        app = build_app(seed_hex=args.seed_hex)
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
     uvicorn.run(app, host=args.bind, port=args.port)
     return 0
 
