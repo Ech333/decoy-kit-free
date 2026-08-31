@@ -52,6 +52,47 @@ class BuildAppTests(unittest.TestCase):
 
 
 @unittest.skipUnless(_HAS_FASTAPI, "fastapi/starlette not installed - pip install 'decoy-kit-free[serve]'")
+class SiemWebhookFailureTests(unittest.TestCase):
+    """siem_webhook is operator-supplied and very likely does real network I/O. Real bug found
+    and fixed 2026-09-01, same class as the paid decoy-kit's own serve.py fix: _alert() called
+    it completely unprotected, so any real network failure turned the trap's normal
+    plausible-success response into a raw 500 - going dark, exactly the tell a deception product
+    must never give a real attacker."""
+
+    def test_a_raising_webhook_does_not_change_the_traps_own_response(self):
+        from decoy_kit_free.serve import build_app
+
+        calls = []
+
+        def failing_webhook(name, detail):
+            calls.append(name)
+            raise ConnectionError("simulated SIEM endpoint unreachable")
+
+        failing_app = build_app(seed_hex=SEED_HEX, siem_webhook=failing_webhook)
+        normal_app = build_app(seed_hex=SEED_HEX, siem_webhook=lambda name, detail: None)
+        failing_resp = TestClient(failing_app, raise_server_exceptions=False).get("/admin")
+        normal_resp = TestClient(normal_app).get("/admin")
+        self.assertEqual(failing_resp.status_code, normal_resp.status_code)
+        self.assertEqual(failing_resp.json(), normal_resp.json())
+        self.assertEqual(calls, ["ghost-schema"])  # webhook really was called (and really did raise)
+
+    def test_detection_is_unaffected_by_a_raising_webhook(self):
+        from decoy_kit_free.serve import build_app
+
+        calls = []
+
+        def flaky_webhook(name, detail):
+            calls.append(name)
+            if len(calls) == 1:
+                raise TimeoutError("simulated transient failure")
+
+        client = TestClient(build_app(seed_hex=SEED_HEX, siem_webhook=flaky_webhook), raise_server_exceptions=False)
+        client.get("/admin")
+        client.get("/admin")
+        self.assertEqual(calls, ["ghost-schema", "ghost-schema"])  # second call still happened normally
+
+
+@unittest.skipUnless(_HAS_FASTAPI, "fastapi/starlette not installed - pip install 'decoy-kit-free[serve]'")
 class ResolveSeedTests(unittest.TestCase):
     def test_explicit_seed_hex_is_used_verbatim(self):
         from decoy_kit_free.serve import _resolve_seed

@@ -51,7 +51,17 @@ def build_app(seed_hex: str | None = None, siem_webhook=None):
     def _alert(trap_name: str, **detail):
         _log.warning("TRAP TRIPPED [%s] %s", trap_name, detail)
         if siem_webhook:
-            siem_webhook(trap_name, detail)
+            # Real gap found and fixed 2026-09-01, same class as the paid decoy-kit's own
+            # serve.py fix: siem_webhook is operator-supplied and very likely does real network
+            # I/O, and any real network call fails sometimes (DNS, timeout, connection refused).
+            # Confirmed live: an unprotected call here turned a genuine trap hit's normal
+            # plausible-success response into a raw 500 - going dark, exactly the tell a
+            # deception product must never give a real attacker. Detection and local logging
+            # (above) already happened and are unaffected either way.
+            try:
+                siem_webhook(trap_name, detail)
+            except Exception:
+                _log.exception("siem_webhook raised for [%s] - alert delivery failed, trap response unaffected", trap_name)
 
     def _on_ghost_schema_hit(path, source_id, response, url):
         # plant_id is None for a bait-path hit with no (or malformed) ?plant= query param - still
