@@ -2,7 +2,7 @@
 
 A real SSH key honeytoken trap, free forever. This is one full module out of
 [Decoy Kit](https://northstartproductionstudio.com/decoy-kit) — Northstar's paid honeytoken
-package (cloud metadata SSRF traps, Kubernetes, Postman, RAG corpora — 9 traps total) — given
+package (cloud metadata SSRF traps, Kubernetes, Postman, RAG corpora — 20 traps total) — given
 away in full, not a crippled demo.
 
 ## What it does
@@ -61,11 +61,13 @@ of the CLI.
 - No independent third-party audit of this codebase — same honest status as every Northstar
   product at this stage.
 
-## Want the other 7 traps?
+## Want the other 19 traps?
 
-Cloud metadata SSRF (AWS/GCP), a Kubernetes exec-credential honeytoken, a poisoned Postman
-collection, RAG honeydocuments, an API tarpit for scanner-bait paths, and time-rotating decoy
-routes — all in [Decoy Kit](https://northstartproductionstudio.com/decoy-kit), same design
+Cloud metadata SSRF (AWS/GCP/Azure), a Kubernetes exec-credential honeytoken, a poisoned Postman
+collection, RAG honeydocuments, an API tarpit for scanner-bait paths, time-rotating decoy routes,
+decoy PyPI/npm registries, a decoy MCP server, directory honeyfiles, an LLM tarpit document,
+router/IoT and serial-to-IP gateway traps, Redis and Firebase traps, a poisoned tool manifest, and
+a calendar-invite trap — all in [Decoy Kit](https://northstartproductionstudio.com/decoy-kit), same design
 principles, same self-hosted model.
 
 ## License
